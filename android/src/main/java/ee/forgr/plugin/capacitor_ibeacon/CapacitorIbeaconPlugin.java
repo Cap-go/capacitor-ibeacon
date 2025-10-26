@@ -27,7 +27,7 @@ import com.getcapacitor.annotation.Permission;
 )
 public class CapacitorIbeaconPlugin extends Plugin {
 
-    private final String PLUGIN_VERSION = "7.0.1";
+    private final String PLUGIN_VERSION = "7.0.2";
 
     @Override
     public void load() {
