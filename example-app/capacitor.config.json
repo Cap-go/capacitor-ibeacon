@@ -1,0 +1,10 @@
+{
+  "appId": "app.capgo.ibeacon",
+  "appName": "iBeacon Example",
+  "webDir": "dist",
+  "plugins": {
+    "SplashScreen": {
+      "launchAutoHide": false
+    }
+  }
+}
