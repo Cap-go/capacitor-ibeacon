@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [7.0.3](https://github.com/Cap-go/capacitor-ibeacon/compare/7.0.2...7.0.3) (2025-10-27)
+
+
+### Bug Fixes
+
+* lint ([48e76bd](https://github.com/Cap-go/capacitor-ibeacon/commit/48e76bd7f7d4fabf1941c29dfe0d7ac9d5925428))
+
 ## [7.0.2](https://github.com/Cap-go/capacitor-ibeacon/compare/7.0.1...7.0.2) (2025-10-26)
 
 
