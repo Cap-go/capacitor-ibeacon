@@ -9,7 +9,7 @@ public class CapacitorIbeacon: NSObject, CLLocationManagerDelegate, CBPeripheral
     private var monitoredRegions: [String: CLBeaconRegion] = [:]
     private var rangedRegions: [String: CLBeaconRegion] = [:]
 
-    public override init() {
+    override public init() {
         super.init()
         locationManager = CLLocationManager()
         locationManager.delegate = self

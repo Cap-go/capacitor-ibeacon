@@ -15,14 +15,8 @@ import com.getcapacitor.annotation.Permission;
 @CapacitorPlugin(
     name = "CapacitorIbeacon",
     permissions = {
-        @Permission(alias = "location", strings = { 
-            Manifest.permission.ACCESS_FINE_LOCATION,
-            Manifest.permission.ACCESS_COARSE_LOCATION
-        }),
-        @Permission(alias = "bluetooth", strings = {
-            Manifest.permission.BLUETOOTH,
-            Manifest.permission.BLUETOOTH_ADMIN
-        })
+        @Permission(alias = "location", strings = { Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION }),
+        @Permission(alias = "bluetooth", strings = { Manifest.permission.BLUETOOTH, Manifest.permission.BLUETOOTH_ADMIN })
     }
 )
 public class CapacitorIbeaconPlugin extends Plugin {
@@ -44,8 +38,7 @@ public class CapacitorIbeaconPlugin extends Plugin {
 
         if (identifier == null || uuid == null) {
             call.reject("Missing required parameters");
-            return
-;
+            return;
         }
 
         // TODO: Implement beacon monitoring using AltBeacon or similar library
@@ -108,8 +101,9 @@ public class CapacitorIbeaconPlugin extends Plugin {
 
     @PluginMethod
     public void requestWhenInUseAuthorization(PluginCall call) {
-        if (ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_FINE_LOCATION) 
-            != PackageManager.PERMISSION_GRANTED) {
+        if (
+            ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
+        ) {
             requestPermissionForAlias("location", call, "locationPermissionCallback");
         } else {
             JSObject ret = new JSObject();
@@ -126,8 +120,9 @@ public class CapacitorIbeaconPlugin extends Plugin {
     @PluginMethod
     public void getAuthorizationStatus(PluginCall call) {
         JSObject ret = new JSObject();
-        if (ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_FINE_LOCATION) 
-            == PackageManager.PERMISSION_GRANTED) {
+        if (
+            ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
+        ) {
             ret.put("status", "authorized_when_in_use");
         } else {
             ret.put("status", "denied");

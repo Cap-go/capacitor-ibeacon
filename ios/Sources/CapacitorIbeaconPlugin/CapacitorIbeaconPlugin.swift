@@ -24,7 +24,7 @@ public class CapacitorIbeaconPlugin: CAPPlugin, CAPBridgedPlugin {
 
     private let implementation = CapacitorIbeacon()
 
-    public override func load() {
+    override public func load() {
         implementation.setPlugin(self)
     }
 
