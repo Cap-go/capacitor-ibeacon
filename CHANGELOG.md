@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [7.0.5](https://github.com/Cap-go/capacitor-ibeacon/compare/7.0.4...7.0.5) (2025-10-29)
+
+
+### Bug Fixes
+
+* CI/CD config ([76d33dc](https://github.com/Cap-go/capacitor-ibeacon/commit/76d33dca51bdd70f33833a642dc488a864241dcd))
+* update AI model in build workflow ([03474e0](https://github.com/Cap-go/capacitor-ibeacon/commit/03474e0498673ee0d1f6d459bc702b3b28d722c6))
+* update github action ([2c3f9ee](https://github.com/Cap-go/capacitor-ibeacon/commit/2c3f9ee9283db31b30edf8e08579a2bda1ab1981))
+
 ## [7.0.4](https://github.com/Cap-go/capacitor-ibeacon/compare/7.0.3...7.0.4) (2025-10-27)
 
 
