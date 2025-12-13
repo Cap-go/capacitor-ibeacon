@@ -54,29 +54,33 @@ public class CapacitorIbeaconPlugin extends Plugin implements BeaconConsumer {
         beaconManager.bind(this);
 
         // Set up monitoring and ranging notifiers
-        beaconManager.addMonitorNotifier(new MonitorNotifier() {
-            @Override
-            public void didEnterRegion(Region region) {
-                notifyDidEnterRegion(region);
-            }
+        beaconManager.addMonitorNotifier(
+            new MonitorNotifier() {
+                @Override
+                public void didEnterRegion(Region region) {
+                    notifyDidEnterRegion(region);
+                }
 
-            @Override
-            public void didExitRegion(Region region) {
-                notifyDidExitRegion(region);
-            }
+                @Override
+                public void didExitRegion(Region region) {
+                    notifyDidExitRegion(region);
+                }
 
-            @Override
-            public void didDetermineStateForRegion(int state, Region region) {
-                notifyDidDetermineStateForRegion(state, region);
+                @Override
+                public void didDetermineStateForRegion(int state, Region region) {
+                    notifyDidDetermineStateForRegion(state, region);
+                }
             }
-        });
+        );
 
-        beaconManager.addRangeNotifier(new RangeNotifier() {
-            @Override
-            public void didRangeBeaconsInRegion(Collection<Beacon> beacons, Region region) {
-                notifyDidRangeBeacons(beacons, region);
+        beaconManager.addRangeNotifier(
+            new RangeNotifier() {
+                @Override
+                public void didRangeBeaconsInRegion(Collection<Beacon> beacons, Region region) {
+                    notifyDidRangeBeacons(beacons, region);
+                }
             }
-        });
+        );
     }
 
     @Override
@@ -258,10 +262,12 @@ public class CapacitorIbeaconPlugin extends Plugin implements BeaconConsumer {
         Boolean enabled = call.getBoolean("enabled", false);
         if (enabled != null && enabled) {
             // Enable ARMA (Auto-Regressive Moving Average) filter for distance smoothing
-            Beacon.setDistanceCalculator(new org.altbeacon.beacon.distance.ModelSpecificDistanceCalculator(
-                getContext(),
-                org.altbeacon.beacon.BeaconManager.getDistanceModelUpdateUrl()
-            ));
+            Beacon.setDistanceCalculator(
+                new org.altbeacon.beacon.distance.ModelSpecificDistanceCalculator(
+                    getContext(),
+                    org.altbeacon.beacon.BeaconManager.getDistanceModelUpdateUrl()
+                )
+            );
         }
         call.resolve();
     }
