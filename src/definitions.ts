@@ -210,6 +210,47 @@ export interface CapacitorIbeaconPlugin {
    * ```
    */
   getPluginVersion(): Promise<{ version: string }>;
+
+  /**
+   * Enable or disable background beacon scanning mode (Android only).
+   * This enables a foreground service for reliable background beacon detection.
+   * Must be called after requesting "Always" location authorization.
+   *
+   * @param options - Background mode configuration
+   * @returns Promise that resolves when background mode is configured
+   * @throws Error if configuration fails
+   * @since 8.0.9
+   * @platform Android
+   * @example
+   * ```typescript
+   * // Enable background mode for beacon scanning
+   * await CapacitorIbeacon.enableBackgroundMode({ enabled: true });
+   *
+   * // Disable background mode
+   * await CapacitorIbeacon.enableBackgroundMode({ enabled: false });
+   * ```
+   */
+  enableBackgroundMode(options: { enabled: boolean }): Promise<void>;
+
+  /**
+   * Configure background scan periods (Android only).
+   * Controls how often and how long the device scans for beacons when in background.
+   *
+   * @param options - Scan period configuration in milliseconds
+   * @returns Promise that resolves when scan periods are configured
+   * @throws Error if configuration fails
+   * @since 8.0.9
+   * @platform Android
+   * @example
+   * ```typescript
+   * // Set background scan to 10 seconds every 30 seconds
+   * await CapacitorIbeacon.setBackgroundScanPeriod({
+   *   scanPeriod: 10000,        // 10 seconds of scanning
+   *   betweenScanPeriod: 30000  // 30 seconds between scans
+   * });
+   * ```
+   */
+  setBackgroundScanPeriod(options: BackgroundScanPeriodOptions): Promise<void>;
 }
 
 /**
@@ -240,6 +281,23 @@ export interface BeaconRegion {
    * Notify when device enters region (iOS only).
    */
   notifyEntryStateOnDisplay?: boolean;
+}
+
+/**
+ * Background scan period configuration options (Android only).
+ */
+export interface BackgroundScanPeriodOptions {
+  /**
+   * Duration of each scan period in milliseconds.
+   * Default: 10000 (10 seconds)
+   */
+  scanPeriod?: number;
+
+  /**
+   * Duration between scan periods in milliseconds.
+   * Default: 15000 (15 seconds)
+   */
+  betweenScanPeriod?: number;
 }
 
 /**

@@ -1,6 +1,6 @@
 import { WebPlugin } from '@capacitor/core';
 
-import type { CapacitorIbeaconPlugin, BeaconRegion, BeaconAdvertisingOptions } from './definitions';
+import type { CapacitorIbeaconPlugin, BeaconRegion, BeaconAdvertisingOptions, BackgroundScanPeriodOptions } from './definitions';
 
 export class CapacitorIbeaconWeb extends WebPlugin implements CapacitorIbeaconPlugin {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -59,5 +59,15 @@ export class CapacitorIbeaconWeb extends WebPlugin implements CapacitorIbeaconPl
 
   async getPluginVersion(): Promise<{ version: string }> {
     return { version: 'web' };
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  enableBackgroundMode(_options: { enabled: boolean }): Promise<void> {
+    throw new Error('Method not implemented on web platform.');
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  setBackgroundScanPeriod(_options: BackgroundScanPeriodOptions): Promise<void> {
+    throw new Error('Method not implemented on web platform.');
   }
 }
