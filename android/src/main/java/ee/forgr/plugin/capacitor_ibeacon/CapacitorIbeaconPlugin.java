@@ -11,8 +11,10 @@ import com.getcapacitor.JSObject;
 import com.getcapacitor.Plugin;
 import com.getcapacitor.PluginCall;
 import com.getcapacitor.PluginMethod;
+import com.getcapacitor.PermissionState;
 import com.getcapacitor.annotation.CapacitorPlugin;
 import com.getcapacitor.annotation.Permission;
+import com.getcapacitor.annotation.PermissionCallback;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -226,6 +228,17 @@ public class CapacitorIbeaconPlugin extends Plugin implements BeaconConsumer {
     @PluginMethod
     public void requestAlwaysAuthorization(PluginCall call) {
         requestWhenInUseAuthorization(call);
+    }
+
+    @PermissionCallback
+    private void locationPermissionCallback(PluginCall call) {
+        JSObject ret = new JSObject();
+        if (getPermissionState("location") == PermissionState.GRANTED) {
+            ret.put("status", "authorized_when_in_use");
+        } else {
+            ret.put("status", "denied");
+        }
+        call.resolve(ret);
     }
 
     @PluginMethod
