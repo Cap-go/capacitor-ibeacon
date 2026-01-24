@@ -10,12 +10,13 @@ import android.os.Build;
 import androidx.core.app.ActivityCompat;
 import com.getcapacitor.JSArray;
 import com.getcapacitor.JSObject;
+import com.getcapacitor.PermissionState;
 import com.getcapacitor.Plugin;
 import com.getcapacitor.PluginCall;
 import com.getcapacitor.PluginMethod;
 import com.getcapacitor.annotation.CapacitorPlugin;
 import com.getcapacitor.annotation.Permission;
-import com.getcapacitor.PermissionState;
+import com.getcapacitor.annotation.PermissionCallback;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -63,7 +64,7 @@ import org.altbeacon.beacon.Region;
 )
 public class CapacitorIbeaconPlugin extends Plugin implements BeaconConsumer {
 
-    private final String pluginVersion = "8.0.8";
+    private final String pluginVersion = "8.0.9";
     private BeaconManager beaconManager;
     private Map<String, Region> monitoredRegions = new HashMap<>();
     private Map<String, Region> rangedRegions = new HashMap<>();
@@ -338,6 +339,17 @@ public class CapacitorIbeaconPlugin extends Plugin implements BeaconConsumer {
         call.resolve(ret);
     }
 
+    @PermissionCallback
+    private void locationPermissionCallback(PluginCall call) {
+        JSObject ret = new JSObject();
+        if (getPermissionState("location") == PermissionState.GRANTED) {
+            ret.put("status", "authorized_when_in_use");
+        } else {
+            ret.put("status", "denied");
+        }
+        call.resolve(ret);
+    }
+
     @PluginMethod
     public void getAuthorizationStatus(PluginCall call) {
         JSObject ret = new JSObject();
@@ -373,22 +385,7 @@ public class CapacitorIbeaconPlugin extends Plugin implements BeaconConsumer {
         call.resolve(ret);
     }
 
-    // Permission callbacks
-
-    @com.getcapacitor.annotation.PermissionCallback
-    private void locationPermissionCallback(PluginCall call) {
-        if (getPermissionState("location") == PermissionState.GRANTED) {
-            JSObject ret = new JSObject();
-            ret.put("status", "authorized_when_in_use");
-            call.resolve(ret);
-        } else {
-            JSObject ret = new JSObject();
-            ret.put("status", "denied");
-            call.resolve(ret);
-        }
-    }
-
-    @com.getcapacitor.annotation.PermissionCallback
+    @PermissionCallback
     private void foregroundLocationForBackgroundCallback(PluginCall call) {
         if (getPermissionState("location") == PermissionState.GRANTED) {
             // Now request background location
@@ -400,7 +397,7 @@ public class CapacitorIbeaconPlugin extends Plugin implements BeaconConsumer {
         }
     }
 
-    @com.getcapacitor.annotation.PermissionCallback
+    @PermissionCallback
     private void backgroundLocationPermissionCallback(PluginCall call) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             boolean hasBackgroundLocation = ActivityCompat.checkSelfPermission(
@@ -421,25 +418,25 @@ public class CapacitorIbeaconPlugin extends Plugin implements BeaconConsumer {
         }
     }
 
-    @com.getcapacitor.annotation.PermissionCallback
+    @PermissionCallback
     private void bluetoothScanPermissionCallback(PluginCall call) {
         // Continue with the original request
         requestWhenInUseAuthorization(call);
     }
 
-    @com.getcapacitor.annotation.PermissionCallback
+    @PermissionCallback
     private void bluetoothConnectPermissionCallback(PluginCall call) {
         // Continue with the original request
         requestWhenInUseAuthorization(call);
     }
 
-    @com.getcapacitor.annotation.PermissionCallback
+    @PermissionCallback
     private void bluetoothScanForBackgroundCallback(PluginCall call) {
         // Continue with the background authorization flow
         requestAlwaysAuthorization(call);
     }
 
-    @com.getcapacitor.annotation.PermissionCallback
+    @PermissionCallback
     private void bluetoothConnectForBackgroundCallback(PluginCall call) {
         // Continue with the background authorization flow
         requestAlwaysAuthorization(call);
