@@ -1,6 +1,11 @@
 import { WebPlugin } from '@capacitor/core';
 
-import type { CapacitorIbeaconPlugin, BeaconRegion, BeaconAdvertisingOptions, BackgroundScanPeriodOptions } from './definitions';
+import type {
+  CapacitorIbeaconPlugin,
+  BeaconRegion,
+  BeaconAdvertisingOptions,
+  BackgroundScanPeriodOptions,
+} from './definitions';
 
 export class CapacitorIbeaconWeb extends WebPlugin implements CapacitorIbeaconPlugin {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars

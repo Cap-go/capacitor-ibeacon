@@ -34,32 +34,11 @@ import org.altbeacon.beacon.Region;
 @CapacitorPlugin(
     name = "CapacitorIbeacon",
     permissions = {
-        @Permission(
-            alias = "location",
-            strings = {
-                Manifest.permission.ACCESS_FINE_LOCATION,
-                Manifest.permission.ACCESS_COARSE_LOCATION
-            }
-        ),
-        @Permission(
-            alias = "backgroundLocation",
-            strings = { Manifest.permission.ACCESS_BACKGROUND_LOCATION }
-        ),
-        @Permission(
-            alias = "bluetooth",
-            strings = {
-                Manifest.permission.BLUETOOTH,
-                Manifest.permission.BLUETOOTH_ADMIN
-            }
-        ),
-        @Permission(
-            alias = "bluetoothScan",
-            strings = { Manifest.permission.BLUETOOTH_SCAN }
-        ),
-        @Permission(
-            alias = "bluetoothConnect",
-            strings = { Manifest.permission.BLUETOOTH_CONNECT }
-        )
+        @Permission(alias = "location", strings = { Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION }),
+        @Permission(alias = "backgroundLocation", strings = { Manifest.permission.ACCESS_BACKGROUND_LOCATION }),
+        @Permission(alias = "bluetooth", strings = { Manifest.permission.BLUETOOTH, Manifest.permission.BLUETOOTH_ADMIN }),
+        @Permission(alias = "bluetoothScan", strings = { Manifest.permission.BLUETOOTH_SCAN }),
+        @Permission(alias = "bluetoothConnect", strings = { Manifest.permission.BLUETOOTH_CONNECT })
     }
 )
 public class CapacitorIbeaconPlugin extends Plugin implements BeaconConsumer {
@@ -256,14 +235,11 @@ public class CapacitorIbeaconPlugin extends Plugin implements BeaconConsumer {
     public void requestWhenInUseAuthorization(PluginCall call) {
         // On Android 12+, also need to request BLUETOOTH_SCAN and BLUETOOTH_CONNECT
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            boolean hasBluetoothScan = ActivityCompat.checkSelfPermission(
-                getContext(),
-                Manifest.permission.BLUETOOTH_SCAN
-            ) == PackageManager.PERMISSION_GRANTED;
-            boolean hasBluetoothConnect = ActivityCompat.checkSelfPermission(
-                getContext(),
-                Manifest.permission.BLUETOOTH_CONNECT
-            ) == PackageManager.PERMISSION_GRANTED;
+            boolean hasBluetoothScan =
+                ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.BLUETOOTH_SCAN) == PackageManager.PERMISSION_GRANTED;
+            boolean hasBluetoothConnect =
+                ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.BLUETOOTH_CONNECT) ==
+                PackageManager.PERMISSION_GRANTED;
 
             if (!hasBluetoothScan) {
                 requestPermissionForAlias("bluetoothScan", call, "bluetoothScanPermissionCallback");
@@ -289,10 +265,8 @@ public class CapacitorIbeaconPlugin extends Plugin implements BeaconConsumer {
     @PluginMethod
     public void requestAlwaysAuthorization(PluginCall call) {
         // First ensure we have foreground location permission
-        boolean hasFineLocation = ActivityCompat.checkSelfPermission(
-            getContext(),
-            Manifest.permission.ACCESS_FINE_LOCATION
-        ) == PackageManager.PERMISSION_GRANTED;
+        boolean hasFineLocation =
+            ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED;
 
         if (!hasFineLocation) {
             // Must request foreground location first before background
@@ -302,10 +276,9 @@ public class CapacitorIbeaconPlugin extends Plugin implements BeaconConsumer {
 
         // On Android 10+ (Q), need to request ACCESS_BACKGROUND_LOCATION separately
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            boolean hasBackgroundLocation = ActivityCompat.checkSelfPermission(
-                getContext(),
-                Manifest.permission.ACCESS_BACKGROUND_LOCATION
-            ) == PackageManager.PERMISSION_GRANTED;
+            boolean hasBackgroundLocation =
+                ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_BACKGROUND_LOCATION) ==
+                PackageManager.PERMISSION_GRANTED;
 
             if (!hasBackgroundLocation) {
                 requestPermissionForAlias("backgroundLocation", call, "backgroundLocationPermissionCallback");
@@ -315,14 +288,11 @@ public class CapacitorIbeaconPlugin extends Plugin implements BeaconConsumer {
 
         // On Android 12+, also need BLUETOOTH_SCAN and BLUETOOTH_CONNECT
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            boolean hasBluetoothScan = ActivityCompat.checkSelfPermission(
-                getContext(),
-                Manifest.permission.BLUETOOTH_SCAN
-            ) == PackageManager.PERMISSION_GRANTED;
-            boolean hasBluetoothConnect = ActivityCompat.checkSelfPermission(
-                getContext(),
-                Manifest.permission.BLUETOOTH_CONNECT
-            ) == PackageManager.PERMISSION_GRANTED;
+            boolean hasBluetoothScan =
+                ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.BLUETOOTH_SCAN) == PackageManager.PERMISSION_GRANTED;
+            boolean hasBluetoothConnect =
+                ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.BLUETOOTH_CONNECT) ==
+                PackageManager.PERMISSION_GRANTED;
 
             if (!hasBluetoothScan) {
                 requestPermissionForAlias("bluetoothScan", call, "bluetoothScanForBackgroundCallback");
@@ -354,10 +324,8 @@ public class CapacitorIbeaconPlugin extends Plugin implements BeaconConsumer {
     public void getAuthorizationStatus(PluginCall call) {
         JSObject ret = new JSObject();
 
-        boolean hasFineLocation = ActivityCompat.checkSelfPermission(
-            getContext(),
-            Manifest.permission.ACCESS_FINE_LOCATION
-        ) == PackageManager.PERMISSION_GRANTED;
+        boolean hasFineLocation =
+            ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED;
 
         if (!hasFineLocation) {
             ret.put("status", "denied");
@@ -367,10 +335,9 @@ public class CapacitorIbeaconPlugin extends Plugin implements BeaconConsumer {
 
         // On Android 10+, check for background location
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            boolean hasBackgroundLocation = ActivityCompat.checkSelfPermission(
-                getContext(),
-                Manifest.permission.ACCESS_BACKGROUND_LOCATION
-            ) == PackageManager.PERMISSION_GRANTED;
+            boolean hasBackgroundLocation =
+                ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_BACKGROUND_LOCATION) ==
+                PackageManager.PERMISSION_GRANTED;
 
             if (hasBackgroundLocation) {
                 ret.put("status", "authorized_always");
@@ -400,10 +367,9 @@ public class CapacitorIbeaconPlugin extends Plugin implements BeaconConsumer {
     @PermissionCallback
     private void backgroundLocationPermissionCallback(PluginCall call) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            boolean hasBackgroundLocation = ActivityCompat.checkSelfPermission(
-                getContext(),
-                Manifest.permission.ACCESS_BACKGROUND_LOCATION
-            ) == PackageManager.PERMISSION_GRANTED;
+            boolean hasBackgroundLocation =
+                ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_BACKGROUND_LOCATION) ==
+                PackageManager.PERMISSION_GRANTED;
 
             if (hasBackgroundLocation) {
                 // Continue with bluetooth permissions on Android 12+
@@ -489,17 +455,15 @@ public class CapacitorIbeaconPlugin extends Plugin implements BeaconConsumer {
                     );
                     channel.setDescription("Background beacon monitoring service");
 
-                    android.app.NotificationManager notificationManager = getContext()
-                        .getSystemService(android.app.NotificationManager.class);
+                    android.app.NotificationManager notificationManager = getContext().getSystemService(
+                        android.app.NotificationManager.class
+                    );
                     if (notificationManager != null) {
                         notificationManager.createNotificationChannel(channel);
                     }
 
                     // Build notification for foreground service
-                    android.app.Notification.Builder builder = new android.app.Notification.Builder(
-                        getContext(),
-                        "beacon_service_channel"
-                    );
+                    android.app.Notification.Builder builder = new android.app.Notification.Builder(getContext(), "beacon_service_channel");
                     builder.setSmallIcon(android.R.drawable.ic_dialog_info);
                     builder.setContentTitle("Beacon Monitoring");
                     builder.setContentText("Scanning for nearby beacons");
