@@ -43,7 +43,7 @@ import org.altbeacon.beacon.Region;
 )
 public class CapacitorIbeaconPlugin extends Plugin implements BeaconConsumer {
 
-    private final String pluginVersion = "8.0.9";
+    private final String pluginVersion = "8.1.0";
     private BeaconManager beaconManager;
     private Map<String, Region> monitoredRegions = new HashMap<>();
     private Map<String, Region> rangedRegions = new HashMap<>();

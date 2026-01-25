@@ -4,7 +4,7 @@ import CoreLocation
 
 @objc(CapacitorIbeaconPlugin)
 public class CapacitorIbeaconPlugin: CAPPlugin, CAPBridgedPlugin {
-    private let pluginVersion: String = "8.0.9"
+    private let pluginVersion: String = "8.1.0"
     public let identifier = "CapacitorIbeaconPlugin"
     public let jsName = "CapacitorIbeacon"
     public let pluginMethods: [CAPPluginMethod] = [
