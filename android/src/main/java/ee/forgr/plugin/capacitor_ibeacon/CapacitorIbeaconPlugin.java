@@ -386,26 +386,108 @@ public class CapacitorIbeaconPlugin extends Plugin implements BeaconConsumer {
 
     @PermissionCallback
     private void bluetoothScanPermissionCallback(PluginCall call) {
-        // Continue with the original request
-        requestWhenInUseAuthorization(call);
+        // Check if BLUETOOTH_SCAN was granted
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            boolean hasBluetoothScan =
+                ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.BLUETOOTH_SCAN) == PackageManager.PERMISSION_GRANTED;
+
+            if (hasBluetoothScan) {
+                // Continue with the original request
+                requestWhenInUseAuthorization(call);
+            } else {
+                // Permission denied, resolve with denied status
+                JSObject ret = new JSObject();
+                ret.put("status", "denied");
+                call.resolve(ret);
+            }
+        } else {
+            // Continue with the original request on older versions
+            requestWhenInUseAuthorization(call);
+        }
     }
 
     @PermissionCallback
     private void bluetoothConnectPermissionCallback(PluginCall call) {
-        // Continue with the original request
-        requestWhenInUseAuthorization(call);
+        // Check if BLUETOOTH_CONNECT was granted
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            boolean hasBluetoothConnect =
+                ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.BLUETOOTH_CONNECT) ==
+                PackageManager.PERMISSION_GRANTED;
+
+            if (hasBluetoothConnect) {
+                // Continue with the original request
+                requestWhenInUseAuthorization(call);
+            } else {
+                // Permission denied, resolve with denied status
+                JSObject ret = new JSObject();
+                ret.put("status", "denied");
+                call.resolve(ret);
+            }
+        } else {
+            // Continue with the original request on older versions
+            requestWhenInUseAuthorization(call);
+        }
     }
 
     @PermissionCallback
     private void bluetoothScanForBackgroundCallback(PluginCall call) {
-        // Continue with the background authorization flow
-        requestAlwaysAuthorization(call);
+        // Check if BLUETOOTH_SCAN was granted
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            boolean hasBluetoothScan =
+                ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.BLUETOOTH_SCAN) == PackageManager.PERMISSION_GRANTED;
+
+            if (hasBluetoothScan) {
+                // Continue with the background authorization flow
+                requestAlwaysAuthorization(call);
+            } else {
+                // Permission denied, check what we can offer
+                boolean hasFineLocation =
+                    ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_FINE_LOCATION) ==
+                    PackageManager.PERMISSION_GRANTED;
+
+                JSObject ret = new JSObject();
+                if (hasFineLocation) {
+                    ret.put("status", "authorized_when_in_use");
+                } else {
+                    ret.put("status", "denied");
+                }
+                call.resolve(ret);
+            }
+        } else {
+            // Continue with the background authorization flow on older versions
+            requestAlwaysAuthorization(call);
+        }
     }
 
     @PermissionCallback
     private void bluetoothConnectForBackgroundCallback(PluginCall call) {
-        // Continue with the background authorization flow
-        requestAlwaysAuthorization(call);
+        // Check if BLUETOOTH_CONNECT was granted
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            boolean hasBluetoothConnect =
+                ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.BLUETOOTH_CONNECT) ==
+                PackageManager.PERMISSION_GRANTED;
+
+            if (hasBluetoothConnect) {
+                // Continue with the background authorization flow
+                requestAlwaysAuthorization(call);
+            } else {
+                // Permission denied, check what we can offer
+                boolean hasFineLocation =
+                    ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_FINE_LOCATION) ==
+                    PackageManager.PERMISSION_GRANTED;
+
+                JSObject ret = new JSObject();
+                if (hasFineLocation) {
+                    ret.put("status", "authorized_when_in_use");
+                } else {
+                    ret.put("status", "denied");
+                }
+                call.resolve(ret);
+            }
+        } else {
+            // Continue with the background authorization flow on older versions
+            requestAlwaysAuthorization(call);
+        }
     }
 
     @PluginMethod
