@@ -48,6 +48,7 @@ public class CapacitorIbeaconPlugin extends Plugin implements BeaconConsumer {
     private Map<String, Region> monitoredRegions = new HashMap<>();
     private Map<String, Region> rangedRegions = new HashMap<>();
     private boolean beaconManagerBound = false;
+    private boolean backgroundModeEnabled = false;
 
     @Override
     public void load() {
@@ -148,6 +149,10 @@ public class CapacitorIbeaconPlugin extends Plugin implements BeaconConsumer {
         try {
             Region region = createRegion(identifier, uuid, major, minor);
             monitoredRegions.put(identifier, region);
+
+            // Automatically enable background mode for continuous monitoring
+            ensureBackgroundModeEnabled();
+
             beaconManager.startMonitoring(region);
             call.resolve();
         } catch (Exception e) {
@@ -170,6 +175,9 @@ public class CapacitorIbeaconPlugin extends Plugin implements BeaconConsumer {
             if (region != null) {
                 beaconManager.stopMonitoring(region);
                 monitoredRegions.remove(identifier);
+
+                // Disable background mode if no more regions are being monitored
+                disableBackgroundModeIfUnused();
             }
             call.resolve();
         } catch (Exception e) {
@@ -192,6 +200,10 @@ public class CapacitorIbeaconPlugin extends Plugin implements BeaconConsumer {
         try {
             Region region = createRegion(identifier, uuid, major, minor);
             rangedRegions.put(identifier, region);
+
+            // Automatically enable background mode for continuous ranging
+            ensureBackgroundModeEnabled();
+
             beaconManager.startRangingBeacons(region);
             call.resolve();
         } catch (Exception e) {
@@ -214,6 +226,9 @@ public class CapacitorIbeaconPlugin extends Plugin implements BeaconConsumer {
             if (region != null) {
                 beaconManager.stopRangingBeacons(region);
                 rangedRegions.remove(identifier);
+
+                // Disable background mode if no more regions are being ranged
+                disableBackgroundModeIfUnused();
             }
             call.resolve();
         } catch (Exception e) {
@@ -556,12 +571,14 @@ public class CapacitorIbeaconPlugin extends Plugin implements BeaconConsumer {
 
                 // Set background mode
                 beaconManager.setBackgroundMode(true);
+                backgroundModeEnabled = true;
             } else {
                 // Disable background mode
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                     beaconManager.disableForegroundServiceScanning();
                 }
                 beaconManager.setBackgroundMode(false);
+                backgroundModeEnabled = false;
             }
             call.resolve();
         } catch (Exception e) {
@@ -595,6 +612,65 @@ public class CapacitorIbeaconPlugin extends Plugin implements BeaconConsumer {
     }
 
     // Helper methods
+
+    /**
+     * Automatically enable background mode when monitoring starts.
+     * This ensures beacon detection continues when the app is in background.
+     * Required for Android 8+ (Oreo and above).
+     */
+    private void ensureBackgroundModeEnabled() {
+        if (!backgroundModeEnabled && Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            try {
+                // Create notification channel for foreground service
+                android.app.NotificationChannel channel = new android.app.NotificationChannel(
+                    "beacon_service_channel",
+                    "Beacon Service",
+                    android.app.NotificationManager.IMPORTANCE_LOW
+                );
+                channel.setDescription("Background beacon monitoring service");
+
+                android.app.NotificationManager notificationManager = getContext().getSystemService(
+                    android.app.NotificationManager.class
+                );
+                if (notificationManager != null) {
+                    notificationManager.createNotificationChannel(channel);
+                }
+
+                // Build notification for foreground service
+                android.app.Notification.Builder builder = new android.app.Notification.Builder(getContext(), "beacon_service_channel");
+                builder.setSmallIcon(android.R.drawable.ic_dialog_info);
+                builder.setContentTitle("Beacon Monitoring");
+                builder.setContentText("Scanning for nearby beacons");
+
+                // Enable foreground service mode in AltBeacon
+                beaconManager.enableForegroundServiceScanning(builder.build(), 456);
+                backgroundModeEnabled = true;
+
+                // Set background mode
+                beaconManager.setBackgroundMode(true);
+            } catch (Exception e) {
+                // Log error but continue - foreground scanning will still work
+                android.util.Log.e("CapacitorIbeacon", "Failed to enable background mode: " + e.getMessage());
+            }
+        }
+    }
+
+    /**
+     * Disable background mode when no more regions are being monitored.
+     */
+    private void disableBackgroundModeIfUnused() {
+        if (backgroundModeEnabled && monitoredRegions.isEmpty() && rangedRegions.isEmpty()) {
+            try {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                    beaconManager.disableForegroundServiceScanning();
+                }
+                beaconManager.setBackgroundMode(false);
+                backgroundModeEnabled = false;
+            } catch (Exception e) {
+                android.util.Log.e("CapacitorIbeacon", "Failed to disable background mode: " + e.getMessage());
+            }
+        }
+    }
 
     private Region createRegion(String identifier, String uuid, Integer major, Integer minor) {
         List<Identifier> identifiers = new ArrayList<>();
