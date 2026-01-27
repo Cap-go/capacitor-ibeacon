@@ -44,6 +44,8 @@ import org.altbeacon.beacon.Region;
 public class CapacitorIbeaconPlugin extends Plugin implements BeaconConsumer {
 
     private final String pluginVersion = "8.1.1";
+    private static final String NOTIFICATION_CHANNEL_ID = "beacon_service_channel";
+    private static final int FOREGROUND_SERVICE_NOTIFICATION_ID = 456;
     private BeaconManager beaconManager;
     private Map<String, Region> monitoredRegions = new HashMap<>();
     private Map<String, Region> rangedRegions = new HashMap<>();
@@ -546,7 +548,7 @@ public class CapacitorIbeaconPlugin extends Plugin implements BeaconConsumer {
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                     // Create notification channel for foreground service
                     android.app.NotificationChannel channel = new android.app.NotificationChannel(
-                        "beacon_service_channel",
+                        NOTIFICATION_CHANNEL_ID,
                         "Beacon Service",
                         android.app.NotificationManager.IMPORTANCE_LOW
                     );
@@ -560,13 +562,13 @@ public class CapacitorIbeaconPlugin extends Plugin implements BeaconConsumer {
                     }
 
                     // Build notification for foreground service
-                    android.app.Notification.Builder builder = new android.app.Notification.Builder(getContext(), "beacon_service_channel");
+                    android.app.Notification.Builder builder = new android.app.Notification.Builder(getContext(), NOTIFICATION_CHANNEL_ID);
                     builder.setSmallIcon(android.R.drawable.ic_dialog_info);
                     builder.setContentTitle("Beacon Monitoring");
                     builder.setContentText("Scanning for nearby beacons");
 
                     // Enable foreground service mode in AltBeacon
-                    beaconManager.enableForegroundServiceScanning(builder.build(), 456);
+                    beaconManager.enableForegroundServiceScanning(builder.build(), FOREGROUND_SERVICE_NOTIFICATION_ID);
                 }
 
                 // Set background mode
@@ -623,7 +625,7 @@ public class CapacitorIbeaconPlugin extends Plugin implements BeaconConsumer {
             try {
                 // Create notification channel for foreground service
                 android.app.NotificationChannel channel = new android.app.NotificationChannel(
-                    "beacon_service_channel",
+                    NOTIFICATION_CHANNEL_ID,
                     "Beacon Service",
                     android.app.NotificationManager.IMPORTANCE_LOW
                 );
@@ -637,13 +639,13 @@ public class CapacitorIbeaconPlugin extends Plugin implements BeaconConsumer {
                 }
 
                 // Build notification for foreground service
-                android.app.Notification.Builder builder = new android.app.Notification.Builder(getContext(), "beacon_service_channel");
+                android.app.Notification.Builder builder = new android.app.Notification.Builder(getContext(), NOTIFICATION_CHANNEL_ID);
                 builder.setSmallIcon(android.R.drawable.ic_dialog_info);
                 builder.setContentTitle("Beacon Monitoring");
                 builder.setContentText("Scanning for nearby beacons");
 
                 // Enable foreground service mode in AltBeacon
-                beaconManager.enableForegroundServiceScanning(builder.build(), 456);
+                beaconManager.enableForegroundServiceScanning(builder.build(), FOREGROUND_SERVICE_NOTIFICATION_ID);
                 backgroundModeEnabled = true;
 
                 // Set background mode

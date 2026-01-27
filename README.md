@@ -52,6 +52,8 @@ Add the following to your `AndroidManifest.xml`:
   <uses-permission android:name="android.permission.BLUETOOTH" />
   <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
   <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION" />
+  <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+  <uses-permission android:name="android.permission.FOREGROUND_SERVICE_LOCATION" />
 </manifest>
 ```
 
@@ -64,6 +66,8 @@ dependencies {
     implementation 'org.altbeacon:android-beacon-library:2.20+'
 }
 ```
+
+**Background Monitoring**: On Android 8.0+ (API 26+), background beacon monitoring automatically enables a foreground service when you start monitoring for regions. This ensures beacon detection continues reliably when your app is in the background. A notification will be displayed to the user indicating that beacon monitoring is active. This happens automatically - no additional configuration is required.
 
 ## API
 
@@ -356,15 +360,17 @@ interface BeaconAdvertisingOptions {
 
 1. **iOS Background Monitoring**: To monitor beacons in the background, you need "Always" location permission and the `location` background mode in Info.plist.
 
-2. **Android Library**: Android implementation requires the AltBeacon library to be integrated into your project.
+2. **Android Background Monitoring**: On Android 8.0+ (API 26+), background beacon monitoring is automatically enabled when you call `startMonitoringForRegion()` or `startRangingBeaconsInRegion()`. This uses a foreground service with a notification to ensure reliable background operation. The foreground service is automatically disabled when you stop monitoring all regions.
 
-3. **Battery Usage**: Continuous beacon ranging can consume significant battery. Consider using monitoring (which is more battery-efficient) and only start ranging when needed.
+3. **Android Library**: Android implementation requires the AltBeacon library to be integrated into your project.
 
-4. **UUID Format**: UUIDs must be in the standard format: `XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX`
+4. **Battery Usage**: Continuous beacon ranging can consume significant battery. Consider using monitoring (which is more battery-efficient) and only start ranging when needed.
 
-5. **Major/Minor Values**: These are optional 16-bit unsigned integers (0-65535) used to identify specific beacons within a UUID.
+5. **UUID Format**: UUIDs must be in the standard format: `XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX`
 
-6. **Permissions**: Always request and check permissions before starting beacon operations.
+6. **Major/Minor Values**: These are optional 16-bit unsigned integers (0-65535) used to identify specific beacons within a UUID.
+
+7. **Permissions**: Always request and check permissions before starting beacon operations. On Android, you need to request `ACCESS_BACKGROUND_LOCATION` permission for background monitoring to work.
 
 ## Credits
 
