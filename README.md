@@ -194,6 +194,34 @@ Enable ARMA filtering for distance calculations (Android only).
 await CapacitorIbeacon.enableARMAFilter({ enabled: true });
 ```
 
+### Android background scanning
+
+Android 8+ requires a foreground service to keep Bluetooth scanning alive in the background. You can opt in once and the plugin will automatically
+toggle background scanning when the app moves between foreground and background.
+
+```typescript
+// Enable background scanning globally (Android only)
+await CapacitorIbeacon.enableBackgroundMode({ enabled: true });
+
+// Or opt in per call
+await CapacitorIbeacon.startMonitoringForRegion({
+  identifier: 'MyBeaconRegion',
+  uuid: 'B9407F30-F5F8-466E-AFF9-25556B57FE6D',
+  enableBackgroundMode: true,
+});
+```
+
+You can also enable it via Capacitor config:
+
+```typescript
+// capacitor.config.ts
+plugins: {
+  CapacitorIbeacon: {
+    enableBackgroundMode: true,
+  },
+}
+```
+
 ## Events
 
 Listen to beacon events using Capacitor's event system:
