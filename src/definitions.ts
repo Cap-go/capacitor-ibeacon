@@ -1,9 +1,11 @@
+import type { Plugin, PluginListenerHandle } from '@capacitor/core';
+
 /**
  * Capacitor iBeacon Plugin - Proximity detection and beacon region monitoring.
  *
  * @since 1.0.0
  */
-export interface CapacitorIbeaconPlugin {
+export interface CapacitorIbeaconPlugin extends Plugin {
   /**
    * Start monitoring for a beacon region. Triggers events when entering/exiting the region.
    *
@@ -251,6 +253,115 @@ export interface CapacitorIbeaconPlugin {
    * ```
    */
   setBackgroundScanPeriod(options: BackgroundScanPeriodOptions): Promise<void>;
+
+  /**
+   * Listen for beacon ranging events.
+   *
+   * @param eventName - The event name ('didRangeBeacons')
+   * @param listenerFunc - Callback function that receives beacon data
+   * @returns Promise that resolves with a PluginListenerHandle
+   * @since 1.0.0
+   * @example
+   * ```typescript
+   * const listener = await CapacitorIbeacon.addListener('didRangeBeacons', (data) => {
+   *   console.log('Beacons:', data.beacons);
+   * });
+   * // Remove listener when done
+   * await listener.remove();
+   * ```
+   */
+  addListener(
+    eventName: 'didRangeBeacons',
+    listenerFunc: (data: RangingEventData) => void,
+  ): Promise<PluginListenerHandle>;
+
+  /**
+   * Listen for region enter events.
+   *
+   * @param eventName - The event name ('didEnterRegion')
+   * @param listenerFunc - Callback function that receives region data
+   * @returns Promise that resolves with a PluginListenerHandle
+   * @since 1.0.0
+   * @example
+   * ```typescript
+   * const listener = await CapacitorIbeacon.addListener('didEnterRegion', (data) => {
+   *   console.log('Entered region:', data.region.identifier);
+   * });
+   * ```
+   */
+  addListener(
+    eventName: 'didEnterRegion',
+    listenerFunc: (data: { region: BeaconRegion }) => void,
+  ): Promise<PluginListenerHandle>;
+
+  /**
+   * Listen for region exit events.
+   *
+   * @param eventName - The event name ('didExitRegion')
+   * @param listenerFunc - Callback function that receives region data
+   * @returns Promise that resolves with a PluginListenerHandle
+   * @since 1.0.0
+   * @example
+   * ```typescript
+   * const listener = await CapacitorIbeacon.addListener('didExitRegion', (data) => {
+   *   console.log('Exited region:', data.region.identifier);
+   * });
+   * ```
+   */
+  addListener(
+    eventName: 'didExitRegion',
+    listenerFunc: (data: { region: BeaconRegion }) => void,
+  ): Promise<PluginListenerHandle>;
+
+  /**
+   * Listen for region state determination events.
+   *
+   * @param eventName - The event name ('didDetermineStateForRegion')
+   * @param listenerFunc - Callback function that receives region and state data
+   * @returns Promise that resolves with a PluginListenerHandle
+   * @since 1.0.0
+   * @example
+   * ```typescript
+   * const listener = await CapacitorIbeacon.addListener('didDetermineStateForRegion', (data) => {
+   *   console.log('Region state:', data.state, 'for', data.region.identifier);
+   * });
+   * ```
+   */
+  addListener(
+    eventName: 'didDetermineStateForRegion',
+    listenerFunc: (data: MonitoringEventData) => void,
+  ): Promise<PluginListenerHandle>;
+
+  /**
+   * Listen for monitoring failure events.
+   *
+   * @param eventName - The event name ('monitoringDidFailForRegion')
+   * @param listenerFunc - Callback function that receives error data
+   * @returns Promise that resolves with a PluginListenerHandle
+   * @since 1.0.0
+   * @example
+   * ```typescript
+   * const listener = await CapacitorIbeacon.addListener('monitoringDidFailForRegion', (data) => {
+   *   console.error('Monitoring failed:', data.error);
+   * });
+   * ```
+   */
+  addListener(
+    eventName: 'monitoringDidFailForRegion',
+    listenerFunc: (data: { region: BeaconRegion; error: string }) => void,
+  ): Promise<PluginListenerHandle>;
+
+  /**
+   * Remove all listeners for this plugin.
+   *
+   * @returns Promise that resolves when all listeners are removed
+   * @since 1.0.0
+   * @example
+   * ```typescript
+   * await CapacitorIbeacon.removeAllListeners();
+   * ```
+   */
+  removeAllListeners(): Promise<void>;
 }
 
 /**
@@ -281,6 +392,12 @@ export interface BeaconRegion {
    * Notify when device enters region (iOS only).
    */
   notifyEntryStateOnDisplay?: boolean;
+
+  /**
+   * Enable Android background mode for this monitoring/ranging call.
+   * When true, the plugin will keep scanning in background using a foreground service.
+   */
+  enableBackgroundMode?: boolean;
 }
 
 /**
@@ -393,34 +510,4 @@ export interface MonitoringEventData {
    * Event state: 'enter' or 'exit'.
    */
   state: 'enter' | 'exit';
-}
-
-/**
- * Event listeners for iBeacon plugin.
- */
-export interface BeaconEventListeners {
-  /**
-   * Called when beacons are detected during ranging.
-   */
-  didRangeBeacons?: (data: RangingEventData) => void;
-
-  /**
-   * Called when entering or exiting a monitored region.
-   */
-  didDetermineStateForRegion?: (data: MonitoringEventData) => void;
-
-  /**
-   * Called when entering a monitored region.
-   */
-  didEnterRegion?: (data: { region: BeaconRegion }) => void;
-
-  /**
-   * Called when exiting a monitored region.
-   */
-  didExitRegion?: (data: { region: BeaconRegion }) => void;
-
-  /**
-   * Called when monitoring state changes.
-   */
-  monitoringDidFailForRegion?: (data: { region: BeaconRegion; error: string }) => void;
 }
