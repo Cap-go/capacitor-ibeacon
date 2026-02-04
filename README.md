@@ -62,8 +62,14 @@ Add the following to your `AndroidManifest.xml`:
   <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
   <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION" />
 
-  <uses-permission android:name="android.permission.BLUETOOTH" />
-  <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
+  <!-- Legacy Bluetooth permissions for Android 11 and below -->
+  <uses-permission android:name="android.permission.BLUETOOTH"
+      android:maxSdkVersion="30" />
+  <uses-permission android:name="android.permission.BLUETOOTH_ADMIN"
+      android:maxSdkVersion="30" />
+  
+  <!-- Modern Bluetooth permissions for Android 12+ -->
+  <!-- Note: Do NOT use neverForLocation flag - iBeacons ARE used for location -->
   <uses-permission android:name="android.permission.BLUETOOTH_SCAN" />
   <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />
 
