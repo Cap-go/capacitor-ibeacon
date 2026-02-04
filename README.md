@@ -54,32 +54,18 @@ Add the following to your `Info.plist`:
 
 ### Android
 
-Add the following to your `AndroidManifest.xml`:
+The plugin automatically includes all required permissions and dependencies. No manual configuration needed.
 
-```xml
-<manifest>
-  <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
-  <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
-  <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION" />
+**Permissions included:**
+- Location permissions (fine, coarse, background)
+- Bluetooth permissions (with proper legacy support for Android ≤11 and modern permissions for Android 12+)
+- Foreground service permissions for background beacon scanning
+- Boot completed permission for persistent monitoring
 
-  <uses-permission android:name="android.permission.BLUETOOTH" />
-  <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
-  <uses-permission android:name="android.permission.BLUETOOTH_SCAN" />
-  <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />
+**Dependencies included:**
+- AltBeacon Android Beacon Library (2.21.2)
 
-  <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
-  <uses-permission android:name="android.permission.FOREGROUND_SERVICE_LOCATION" />
-  <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
-</manifest>
-```
-
-Add to your app's `build.gradle`:
-
-```gradle
-dependencies {
-    implementation 'org.altbeacon:android-beacon-library:2.21.2'
-}
-```
+**Important:** You still need to request permissions at runtime using the plugin's authorization methods (see API section below).
 
 ## API
 
