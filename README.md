@@ -34,23 +34,52 @@ npx cap sync
 
 ### iOS
 
-Add the following to your `Info.plist`:
+#### Step 1: Configure Info.plist
+
+Add the following keys to your `ios/App/App/Info.plist` file:
 
 ```xml
+<!-- Required: Location permission for beacon detection -->
 <key>NSLocationWhenInUseUsageDescription</key>
 <string>This app needs location access to detect nearby beacons</string>
 
+<!-- Required for background monitoring: Always authorization -->
 <key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
 <string>This app needs location access to monitor beacons in the background</string>
 
+<!-- Required: Bluetooth usage (iOS 13+) -->
 <key>NSBluetoothAlwaysUsageDescription</key>
 <string>This app uses Bluetooth to detect nearby beacons</string>
 
+<!-- Required for iOS 12 and earlier -->
+<key>NSBluetoothPeripheralUsageDescription</key>
+<string>This app uses Bluetooth to detect and advertise as beacons</string>
+
+<!-- Required for background beacon monitoring -->
 <key>UIBackgroundModes</key>
 <array>
   <string>location</string>
+  <string>bluetooth-central</string>
 </array>
 ```
+
+#### Step 2: Enable Capabilities in Xcode
+
+1. Open your project in Xcode: `ios/App/App.xcworkspace`
+2. Select your app target
+3. Go to the "Signing & Capabilities" tab
+4. Click "+ Capability" and add "Background Modes"
+5. Check the following options:
+   - ✅ **Location updates** (required for background beacon monitoring)
+   - ✅ **Uses Bluetooth LE accessories** (required for beacon detection)
+
+#### Permissions Required
+
+- **When In Use**: For foreground beacon ranging and monitoring
+- **Always**: Required for background beacon monitoring (detecting beacons when app is not active)
+- **Bluetooth**: Automatically granted on iOS 13+ when using CoreLocation for beacons
+
+> **Note**: The plugin uses CoreLocation for beacon detection, which handles Bluetooth scanning internally. Direct Bluetooth permissions are only needed if your app also uses CoreBluetooth for other purposes (e.g., advertising as a beacon).
 
 ### Android
 
@@ -384,17 +413,100 @@ interface BeaconAdvertisingOptions {
 
 ## Important Notes
 
-1. **iOS Background Monitoring**: To monitor beacons in the background, you need "Always" location permission and the `location` background mode in Info.plist.
+1. **iOS Background Monitoring**: To monitor beacons in the background, you need:
+   - "Always" location authorization (`requestAlwaysAuthorization()`)
+   - Background Modes capability enabled in Xcode
+   - `UIBackgroundModes` with both `location` and `bluetooth-central` in Info.plist
 
-2. **Android Library**: Android implementation requires the AltBeacon library to be integrated into your project.
+2. **iOS Xcode Configuration**: Adding Info.plist keys alone is not enough. You **must** enable Background Modes capability in Xcode (see Configuration section above). This is the most common setup issue.
 
-3. **Battery Usage**: Continuous beacon ranging can consume significant battery. Consider using monitoring (which is more battery-efficient) and only start ranging when needed.
+3. **Android Library**: This plugin includes the AltBeacon Android Beacon Library (2.21.2) automatically.
 
-4. **UUID Format**: UUIDs must be in the standard format: `XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX`
+4. **Battery Usage**: Continuous beacon ranging can consume significant battery. Consider using monitoring (which is more battery-efficient) and only start ranging when needed.
 
-5. **Major/Minor Values**: These are optional 16-bit unsigned integers (0-65535) used to identify specific beacons within a UUID.
+5. **UUID Format**: UUIDs must be in the standard format: `XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX`
 
-6. **Permissions**: Always request and check permissions before starting beacon operations.
+6. **Major/Minor Values**: These are optional 16-bit unsigned integers (0-65535) used to identify specific beacons within a UUID.
+
+7. **Permissions**: Always request and check permissions before starting beacon operations.
+
+## Troubleshooting
+
+### iOS Issues
+
+**"Beacons not detected" or "Plugin not working"**
+
+1. **Verify Info.plist configuration**:
+   - Ensure all required keys are present (see Configuration section above)
+   - Check that permission descriptions are meaningful and not empty
+
+2. **Enable Background Modes in Xcode**:
+   - This is a common issue - you MUST enable capabilities in Xcode, not just add Info.plist keys
+   - Open `ios/App/App.xcworkspace` in Xcode
+   - Select your target → "Signing & Capabilities"
+   - Add "Background Modes" capability
+   - Check "Location updates" and "Uses Bluetooth LE accessories"
+
+3. **Request proper authorization**:
+   ```typescript
+   // For foreground detection only
+   await CapacitorIbeacon.requestWhenInUseAuthorization();
+   
+   // For background monitoring (required for region enter/exit events when app is closed)
+   await CapacitorIbeacon.requestAlwaysAuthorization();
+   ```
+
+4. **Check Bluetooth is enabled**:
+   ```typescript
+   const { enabled } = await CapacitorIbeacon.isBluetoothEnabled();
+   if (!enabled) {
+     // Prompt user to enable Bluetooth in Settings
+   }
+   ```
+
+5. **Verify authorization status**:
+   ```typescript
+   const { status } = await CapacitorIbeacon.getAuthorizationStatus();
+   console.log('Auth status:', status);
+   // Should be 'authorized_when_in_use' or 'authorized_always'
+   ```
+
+6. **Check device compatibility**:
+   - iBeacon requires iOS 7.0+
+   - Some features require specific iOS versions (e.g., ranging in background)
+   - Use `isRangingAvailable()` to check device support
+
+**"No events firing" or "addListener not working"**
+
+- Ensure you set up listeners **before** starting monitoring/ranging:
+  ```typescript
+  // Set up listeners first
+  await CapacitorIbeacon.addListener('didEnterRegion', (data) => {
+    console.log('Entered:', data.region.identifier);
+  });
+  
+  // Then start monitoring
+  await CapacitorIbeacon.startMonitoringForRegion({
+    identifier: 'MyRegion',
+    uuid: 'YOUR-UUID-HERE'
+  });
+  ```
+
+**Background monitoring not working**
+
+- Requires "Always" authorization: `requestAlwaysAuthorization()`
+- Must have `UIBackgroundModes` with `location` and `bluetooth-central` in Info.plist
+- Must have Background Modes capability enabled in Xcode
+- iOS may throttle background scanning to preserve battery
+
+### Android Issues
+
+See the Android permissions section in the Configuration above. Most Android issues relate to:
+- Not requesting runtime permissions
+- Missing foreground service on Android 8+
+- Bluetooth not enabled
+
+For detailed Android troubleshooting, check the AltBeacon library documentation.
 
 ## Credits
 
