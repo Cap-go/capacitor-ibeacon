@@ -1,6 +1,6 @@
 {
   "name": "@capgo/capacitor-ibeacon",
-  "version": "8.1.17",
+  "version": "8.1.18",
   "description": "iBeacon plugin for Capacitor - proximity detection and beacon region monitoring",
   "main": "dist/plugin.cjs.js",
   "module": "dist/esm/index.js",
