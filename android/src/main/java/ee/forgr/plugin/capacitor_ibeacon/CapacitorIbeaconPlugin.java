@@ -43,7 +43,7 @@ import org.altbeacon.beacon.Region;
 )
 public class CapacitorIbeaconPlugin extends Plugin implements BeaconConsumer {
 
-    private final String pluginVersion = "8.1.28";
+    private final String pluginVersion = "8.1.29";
     private static final String FOREGROUND_CHANNEL_ID = "beacon_service_channel";
     private static final int FOREGROUND_NOTIFICATION_ID = 456;
     private BeaconManager beaconManager;
