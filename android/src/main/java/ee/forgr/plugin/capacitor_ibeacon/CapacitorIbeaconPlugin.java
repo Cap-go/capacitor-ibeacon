@@ -366,6 +366,12 @@ public class CapacitorIbeaconPlugin extends Plugin implements BeaconConsumer {
             return;
         }
 
+        if (!hasBluetoothPermissions()) {
+            ret.put("status", "denied");
+            call.resolve(ret);
+            return;
+        }
+
         // On Android 10+, check for background location
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             boolean hasBackgroundLocation =
@@ -557,12 +563,8 @@ public class CapacitorIbeaconPlugin extends Plugin implements BeaconConsumer {
     @PluginMethod
     public void enableBackgroundMode(PluginCall call) {
         Boolean enabled = call.getBoolean("enabled", true);
-        try {
-            setBackgroundModeEnabled(enabled != null && enabled);
-            call.resolve();
-        } catch (Exception e) {
-            call.reject("Failed to enable background mode", e);
-        }
+        setBackgroundModeEnabled(enabled != null && enabled);
+        call.resolve();
     }
 
     @PluginMethod
@@ -591,6 +593,16 @@ public class CapacitorIbeaconPlugin extends Plugin implements BeaconConsumer {
     }
 
     // Helper methods
+
+    private boolean hasBluetoothPermissions() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            return (
+                ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.BLUETOOTH_SCAN) == PackageManager.PERMISSION_GRANTED &&
+                ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.BLUETOOTH_CONNECT) == PackageManager.PERMISSION_GRANTED
+            );
+        }
+        return true;
+    }
 
     private Region createRegion(String identifier, String uuid, Integer major, Integer minor) {
         List<Identifier> identifiers = new ArrayList<>();
@@ -708,33 +720,39 @@ public class CapacitorIbeaconPlugin extends Plugin implements BeaconConsumer {
         }
     }
 
-    private void enableForegroundServiceIfNeeded() {
+    private boolean enableForegroundServiceIfNeeded() {
         if (foregroundServiceEnabled || Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
-            return;
+            return true;
         }
 
-        // Create notification channel for foreground service
-        android.app.NotificationChannel channel = new android.app.NotificationChannel(
-            FOREGROUND_CHANNEL_ID,
-            "Beacon Service",
-            android.app.NotificationManager.IMPORTANCE_LOW
-        );
-        channel.setDescription("Background beacon monitoring service");
+        try {
+            // Create notification channel for foreground service
+            android.app.NotificationChannel channel = new android.app.NotificationChannel(
+                FOREGROUND_CHANNEL_ID,
+                "Beacon Service",
+                android.app.NotificationManager.IMPORTANCE_LOW
+            );
+            channel.setDescription("Background beacon monitoring service");
 
-        android.app.NotificationManager notificationManager = getContext().getSystemService(android.app.NotificationManager.class);
-        if (notificationManager != null) {
-            notificationManager.createNotificationChannel(channel);
+            android.app.NotificationManager notificationManager = getContext().getSystemService(android.app.NotificationManager.class);
+            if (notificationManager != null) {
+                notificationManager.createNotificationChannel(channel);
+            }
+
+            // Build notification for foreground service
+            android.app.Notification.Builder builder = new android.app.Notification.Builder(getContext(), FOREGROUND_CHANNEL_ID);
+            builder.setSmallIcon(android.R.drawable.ic_dialog_info);
+            builder.setContentTitle("Beacon Monitoring");
+            builder.setContentText("Scanning for nearby beacons");
+
+            // Enable foreground service mode in AltBeacon
+            beaconManager.enableForegroundServiceScanning(builder.build(), FOREGROUND_NOTIFICATION_ID);
+            foregroundServiceEnabled = true;
+            return true;
+        } catch (Exception e) {
+            android.util.Log.w("CapacitorIbeacon", "Foreground service scanning unavailable, continuing without it", e);
+            return false;
         }
-
-        // Build notification for foreground service
-        android.app.Notification.Builder builder = new android.app.Notification.Builder(getContext(), FOREGROUND_CHANNEL_ID);
-        builder.setSmallIcon(android.R.drawable.ic_dialog_info);
-        builder.setContentTitle("Beacon Monitoring");
-        builder.setContentText("Scanning for nearby beacons");
-
-        // Enable foreground service mode in AltBeacon
-        beaconManager.enableForegroundServiceScanning(builder.build(), FOREGROUND_NOTIFICATION_ID);
-        foregroundServiceEnabled = true;
     }
 
     private void disableForegroundServiceIfNeeded() {
@@ -742,7 +760,12 @@ public class CapacitorIbeaconPlugin extends Plugin implements BeaconConsumer {
             return;
         }
 
-        beaconManager.disableForegroundServiceScanning();
-        foregroundServiceEnabled = false;
+        try {
+            beaconManager.disableForegroundServiceScanning();
+        } catch (Exception e) {
+            android.util.Log.w("CapacitorIbeacon", "Failed to disable foreground service scanning", e);
+        } finally {
+            foregroundServiceEnabled = false;
+        }
     }
 }
