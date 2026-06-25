@@ -30,6 +30,7 @@ import org.altbeacon.beacon.Identifier;
 import org.altbeacon.beacon.MonitorNotifier;
 import org.altbeacon.beacon.RangeNotifier;
 import org.altbeacon.beacon.Region;
+import org.altbeacon.beacon.Settings;
 
 @CapacitorPlugin(
     name = "CapacitorIbeacon",
@@ -65,6 +66,9 @@ public class CapacitorIbeaconPlugin extends Plugin implements BeaconConsumer {
         // Configure for background scanning - enable long-running scanning mode
         // This is critical for beacon detection when app is in background
         beaconManager.setEnableScheduledScanJobs(false);
+
+        // Prevent Android from downgrading long-running BLE scans to opportunistic mode
+        beaconManager.adjustSettings(new Settings.Builder().setLongScanForcingEnabled(true).build());
 
         // Configure background scan periods (in milliseconds)
         // Default background scan: 10 seconds scan, 5 minutes between scans
