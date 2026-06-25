@@ -25,6 +25,9 @@
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_LOCATION"
         tools:targetApi="upside_down_cake" />
 
+    <!-- Required to show foreground service notification on Android 13+ -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+
     <!-- Required for receiving boot completed to restart beacon monitoring -->
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
 
