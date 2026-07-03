@@ -4,7 +4,7 @@ import pkg from './package.json';
 
 const config: CapacitorConfig = {
   appId: 'app.capgo.ibeacon',
-  appName: 'iBeacon Example',
+  appName: '@capgo/capacitor-ibeacon',
   webDir: 'dist',
   plugins: {
     SplashScreen: {
