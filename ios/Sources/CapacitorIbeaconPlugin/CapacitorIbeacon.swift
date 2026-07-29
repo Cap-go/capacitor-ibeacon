@@ -13,11 +13,23 @@ public class CapacitorIbeacon: NSObject, CLLocationManagerDelegate, CBPeripheral
         super.init()
         locationManager = CLLocationManager()
         locationManager.delegate = self
-        peripheralManager = CBPeripheralManager(delegate: self, queue: nil)
+        // peripheralManager intentionally not constructed here - see ensurePeripheralManager().
     }
 
     public func setPlugin(_ plugin: CapacitorIbeaconPlugin) {
         self.plugin = plugin
+    }
+
+    // Merely instantiating CBPeripheralManager triggers the system Bluetooth permission prompt,
+    // independent of any method actually being called on it. Only startAdvertising/
+    // stopAdvertising/isBluetoothEnabled need it, so defer construction until one of them
+    // actually runs, instead of doing it unconditionally in init() - which otherwise fires the
+    // prompt at app launch, before any of this plugin's own JS API has been touched.
+    private func ensurePeripheralManager() -> CBPeripheralManager {
+        if peripheralManager == nil {
+            peripheralManager = CBPeripheralManager(delegate: self, queue: nil)
+        }
+        return peripheralManager
     }
 
     public func startMonitoringForRegion(identifier: String, uuid: String, major: Int?, minor: Int?, completion: @escaping (Result<Void, Error>) -> Void) {
@@ -91,16 +103,18 @@ public class CapacitorIbeacon: NSObject, CLLocationManagerDelegate, CBPeripheral
         let beaconRegion = CLBeaconRegion(uuid: beaconUUID, major: CLBeaconMajorValue(major), minor: CLBeaconMinorValue(minor), identifier: identifier)
 
         if let power = measuredPower {
-            peripheralManager.startAdvertising(beaconRegion.peripheralData(withMeasuredPower: NSNumber(value: power)) as? [String: Any])
+            ensurePeripheralManager().startAdvertising(beaconRegion.peripheralData(withMeasuredPower: NSNumber(value: power)) as? [String: Any])
         } else {
-            peripheralManager.startAdvertising(beaconRegion.peripheralData(withMeasuredPower: nil) as? [String: Any])
+            ensurePeripheralManager().startAdvertising(beaconRegion.peripheralData(withMeasuredPower: nil) as? [String: Any])
         }
 
         completion(.success(()))
     }
 
     public func stopAdvertising() {
-        peripheralManager.stopAdvertising()
+        // Not ensurePeripheralManager(): stopping something that was never started shouldn't
+        // newly construct (and trigger a permission prompt for) a manager that doesn't exist yet.
+        peripheralManager?.stopAdvertising()
     }
 
     public func requestWhenInUseAuthorization() {
@@ -130,7 +144,7 @@ public class CapacitorIbeacon: NSObject, CLLocationManagerDelegate, CBPeripheral
     }
 
     public func isBluetoothEnabled() -> Bool {
-        return peripheralManager.state == .poweredOn
+        return ensurePeripheralManager().state == .poweredOn
     }
 
     public func isRangingAvailable() -> Bool {
