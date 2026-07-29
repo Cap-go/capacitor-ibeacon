@@ -570,9 +570,7 @@ public class CapacitorIbeaconPlugin extends Plugin implements BeaconConsumer {
         Boolean enabled = call.getBoolean("enabled", true);
         boolean wantBackground = enabled != null && enabled;
         try {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O && wantBackground != foregroundServiceEnabled) {
-                reconfigureForegroundService(wantBackground);
-            }
+            ensureForegroundServiceMatches(wantBackground);
             setBackgroundModeEnabled(wantBackground);
             call.resolve();
         } catch (Exception e) {
@@ -713,11 +711,9 @@ public class CapacitorIbeaconPlugin extends Plugin implements BeaconConsumer {
     }
 
     private void bindIfNeeded() {
+        ensureForegroundServiceMatches(backgroundModeEnabled);
         if (beaconManagerBound || beaconManager == null) {
             return;
-        }
-        if (backgroundModeEnabled) {
-            enableForegroundServiceIfNeeded();
         }
         // Set before bind() - AltBeacon is synchronously bound inside bind() itself, not only
         // once onBeaconServiceConnect() fires.
@@ -735,6 +731,14 @@ public class CapacitorIbeaconPlugin extends Plugin implements BeaconConsumer {
             return;
         }
         beaconManager.setBackgroundMode(enabled && isInBackground);
+    }
+
+    // Covers both a fresh bind and a later call (e.g. a per-region enableBackgroundMode option)
+    // that raises the requirement while already bound.
+    private void ensureForegroundServiceMatches(boolean wantForegroundService) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O && wantForegroundService != foregroundServiceEnabled) {
+            reconfigureForegroundService(wantForegroundService);
+        }
     }
 
     // enableForegroundServiceScanning()/disableForegroundServiceScanning() may only be called
