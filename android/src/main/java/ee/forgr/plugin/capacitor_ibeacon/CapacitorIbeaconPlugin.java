@@ -80,8 +80,7 @@ public class CapacitorIbeaconPlugin extends Plugin implements BeaconConsumer {
         beaconManager.setForegroundBetweenScanPeriod(0L); // Continuous scanning in foreground
         beaconManager.setForegroundScanPeriod(1100L); // Standard scan period
 
-        // Bind to beacon service
-        beaconManager.bind(this);
+        // bind() is deferred to bindIfNeeded().
 
         // Set up monitoring and ranging notifiers
         beaconManager.addMonitorNotifier(
@@ -179,6 +178,7 @@ public class CapacitorIbeaconPlugin extends Plugin implements BeaconConsumer {
             if (enableBackgroundMode != null) {
                 setBackgroundModeEnabled(enableBackgroundMode);
             }
+            bindIfNeeded();
             Region region = createRegion(identifier, uuid, major, minor);
             monitoredRegions.put(identifier, region);
             beaconManager.startMonitoring(region);
@@ -227,6 +227,7 @@ public class CapacitorIbeaconPlugin extends Plugin implements BeaconConsumer {
             if (enableBackgroundMode != null) {
                 setBackgroundModeEnabled(enableBackgroundMode);
             }
+            bindIfNeeded();
             Region region = createRegion(identifier, uuid, major, minor);
             rangedRegions.put(identifier, region);
             beaconManager.startRangingBeacons(region);
@@ -567,8 +568,16 @@ public class CapacitorIbeaconPlugin extends Plugin implements BeaconConsumer {
     @PluginMethod
     public void enableBackgroundMode(PluginCall call) {
         Boolean enabled = call.getBoolean("enabled", true);
-        setBackgroundModeEnabled(enabled != null && enabled);
-        call.resolve();
+        boolean wantBackground = enabled != null && enabled;
+        try {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O && wantBackground != foregroundServiceEnabled) {
+                reconfigureForegroundService(wantBackground);
+            }
+            setBackgroundModeEnabled(wantBackground);
+            call.resolve();
+        } catch (Exception e) {
+            call.reject("Failed to enable background mode", e);
+        }
     }
 
     @PluginMethod
@@ -703,6 +712,16 @@ public class CapacitorIbeaconPlugin extends Plugin implements BeaconConsumer {
         }
     }
 
+    private void bindIfNeeded() {
+        if (beaconManagerBound || beaconManager == null) {
+            return;
+        }
+        if (backgroundModeEnabled) {
+            enableForegroundServiceIfNeeded();
+        }
+        beaconManager.bind(this);
+    }
+
     private void setBackgroundModeEnabled(boolean enabled) {
         backgroundModeEnabled = enabled;
         applyBackgroundMode(enabled);
@@ -712,15 +731,30 @@ public class CapacitorIbeaconPlugin extends Plugin implements BeaconConsumer {
         if (beaconManager == null) {
             return;
         }
+        beaconManager.setBackgroundMode(enabled && isInBackground);
+    }
 
-        boolean shouldEnableBackgroundMode = enabled && isInBackground;
-
-        if (shouldEnableBackgroundMode) {
+    // enableForegroundServiceScanning()/disableForegroundServiceScanning() may only be called
+    // while unbound. Re-registers any regions that were actively monitored/ranged before the cycle.
+    private void reconfigureForegroundService(boolean wantForegroundService) {
+        boolean wasBound = beaconManagerBound;
+        if (wasBound) {
+            beaconManager.unbind(this);
+            beaconManagerBound = false;
+        }
+        if (wantForegroundService) {
             enableForegroundServiceIfNeeded();
-            beaconManager.setBackgroundMode(true);
         } else {
             disableForegroundServiceIfNeeded();
-            beaconManager.setBackgroundMode(false);
+        }
+        if (wasBound) {
+            beaconManager.bind(this);
+            for (Region region : monitoredRegions.values()) {
+                beaconManager.startMonitoring(region);
+            }
+            for (Region region : rangedRegions.values()) {
+                beaconManager.startRangingBeacons(region);
+            }
         }
     }
 
