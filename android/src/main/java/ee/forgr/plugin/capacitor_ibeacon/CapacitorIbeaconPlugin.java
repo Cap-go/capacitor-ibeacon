@@ -143,7 +143,7 @@ public class CapacitorIbeaconPlugin extends Plugin implements BeaconConsumer {
 
     @Override
     public void onBeaconServiceConnect() {
-        beaconManagerBound = true;
+        // beaconManagerBound is already set synchronously wherever bind() is called.
     }
 
     @Override
@@ -719,6 +719,9 @@ public class CapacitorIbeaconPlugin extends Plugin implements BeaconConsumer {
         if (backgroundModeEnabled) {
             enableForegroundServiceIfNeeded();
         }
+        // Set before bind() - AltBeacon is synchronously bound inside bind() itself, not only
+        // once onBeaconServiceConnect() fires.
+        beaconManagerBound = true;
         beaconManager.bind(this);
     }
 
@@ -748,6 +751,7 @@ public class CapacitorIbeaconPlugin extends Plugin implements BeaconConsumer {
             disableForegroundServiceIfNeeded();
         }
         if (wasBound) {
+            beaconManagerBound = true;
             beaconManager.bind(this);
             for (Region region : monitoredRegions.values()) {
                 beaconManager.startMonitoring(region);
