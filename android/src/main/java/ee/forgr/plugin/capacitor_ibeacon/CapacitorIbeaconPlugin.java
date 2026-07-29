@@ -570,7 +570,10 @@ public class CapacitorIbeaconPlugin extends Plugin implements BeaconConsumer {
         Boolean enabled = call.getBoolean("enabled", true);
         boolean wantBackground = enabled != null && enabled;
         try {
-            ensureForegroundServiceMatches(wantBackground);
+            if (!ensureForegroundServiceMatches(wantBackground)) {
+                call.reject("Failed to enable foreground service scanning");
+                return;
+            }
             setBackgroundModeEnabled(wantBackground);
             call.resolve();
         } catch (Exception e) {
@@ -735,22 +738,24 @@ public class CapacitorIbeaconPlugin extends Plugin implements BeaconConsumer {
 
     // Covers both a fresh bind and a later call (e.g. a per-region enableBackgroundMode option)
     // that raises the requirement while already bound.
-    private void ensureForegroundServiceMatches(boolean wantForegroundService) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O && wantForegroundService != foregroundServiceEnabled) {
-            reconfigureForegroundService(wantForegroundService);
+    private boolean ensureForegroundServiceMatches(boolean wantForegroundService) {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O || wantForegroundService == foregroundServiceEnabled) {
+            return true;
         }
+        return reconfigureForegroundService(wantForegroundService);
     }
 
     // enableForegroundServiceScanning()/disableForegroundServiceScanning() may only be called
     // while unbound. Re-registers any regions that were actively monitored/ranged before the cycle.
-    private void reconfigureForegroundService(boolean wantForegroundService) {
+    private boolean reconfigureForegroundService(boolean wantForegroundService) {
         boolean wasBound = beaconManagerBound;
         if (wasBound) {
             beaconManager.unbind(this);
             beaconManagerBound = false;
         }
+        boolean success = true;
         if (wantForegroundService) {
-            enableForegroundServiceIfNeeded();
+            success = enableForegroundServiceIfNeeded();
         } else {
             disableForegroundServiceIfNeeded();
         }
@@ -764,6 +769,7 @@ public class CapacitorIbeaconPlugin extends Plugin implements BeaconConsumer {
                 beaconManager.startRangingBeacons(region);
             }
         }
+        return success;
     }
 
     private boolean enableForegroundServiceIfNeeded() {
