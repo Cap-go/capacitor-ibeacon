@@ -579,6 +579,9 @@ public class CapacitorIbeaconPlugin extends Plugin implements BeaconConsumer {
         try {
             beaconManager.setBackgroundScanPeriod(scanPeriod);
             beaconManager.setBackgroundBetweenScanPeriod(betweenScanPeriod);
+            if (beaconManagerBound) {
+                beaconManager.updateScanPeriods();
+            }
             call.resolve();
         } catch (Exception e) {
             call.reject("Failed to set background scan period", e);
