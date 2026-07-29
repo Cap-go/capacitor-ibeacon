@@ -8,16 +8,42 @@ public class CapacitorIbeacon: NSObject, CLLocationManagerDelegate, CBPeripheral
     private weak var plugin: CapacitorIbeaconPlugin?
     private var monitoredRegions: [String: CLBeaconRegion] = [:]
     private var rangedRegions: [String: CLBeaconRegion] = [:]
+    private var peripheralManagerReadyCallbacks: [(CBPeripheralManager) -> Void] = []
+    private let peripheralManagerStateTimeout: TimeInterval = 3.0
 
     override public init() {
         super.init()
         locationManager = CLLocationManager()
         locationManager.delegate = self
-        peripheralManager = CBPeripheralManager(delegate: self, queue: nil)
+        // peripheralManager intentionally not constructed here - see withReadyPeripheralManager().
     }
 
     public func setPlugin(_ plugin: CapacitorIbeaconPlugin) {
         self.plugin = plugin
+    }
+
+    // Merely instantiating CBPeripheralManager triggers the Bluetooth permission prompt, so
+    // construction is deferred to here rather than init(). Its state also starts .unknown and
+    // only settles asynchronously via peripheralManagerDidUpdateState() below, so `body` waits
+    // for that instead of seeing a stale .unknown - with a timeout in case it never settles.
+    private func withReadyPeripheralManager(_ body: @escaping (CBPeripheralManager) -> Void) {
+        if peripheralManager == nil {
+            peripheralManager = CBPeripheralManager(delegate: self, queue: nil)
+        }
+
+        if peripheralManager.state != .unknown {
+            body(peripheralManager)
+            return
+        }
+
+        peripheralManagerReadyCallbacks.append(body)
+
+        DispatchQueue.main.asyncAfter(deadline: .now() + peripheralManagerStateTimeout) { [weak self] in
+            guard let self = self, !self.peripheralManagerReadyCallbacks.isEmpty else { return }
+            let callbacks = self.peripheralManagerReadyCallbacks
+            self.peripheralManagerReadyCallbacks.removeAll()
+            callbacks.forEach { $0(self.peripheralManager) }
+        }
     }
 
     public func startMonitoringForRegion(identifier: String, uuid: String, major: Int?, minor: Int?, completion: @escaping (Result<Void, Error>) -> Void) {
@@ -90,17 +116,27 @@ public class CapacitorIbeacon: NSObject, CLLocationManagerDelegate, CBPeripheral
 
         let beaconRegion = CLBeaconRegion(uuid: beaconUUID, major: CLBeaconMajorValue(major), minor: CLBeaconMinorValue(minor), identifier: identifier)
 
-        if let power = measuredPower {
-            peripheralManager.startAdvertising(beaconRegion.peripheralData(withMeasuredPower: NSNumber(value: power)) as? [String: Any])
-        } else {
-            peripheralManager.startAdvertising(beaconRegion.peripheralData(withMeasuredPower: nil) as? [String: Any])
-        }
+        withReadyPeripheralManager { manager in
+            guard manager.state == .poweredOn else {
+                let error = NSError(domain: "CapacitorIbeacon", code: -2, userInfo: [NSLocalizedDescriptionKey: "Bluetooth is not powered on"])
+                completion(.failure(error))
+                return
+            }
 
-        completion(.success(()))
+            if let power = measuredPower {
+                manager.startAdvertising(beaconRegion.peripheralData(withMeasuredPower: NSNumber(value: power)) as? [String: Any])
+            } else {
+                manager.startAdvertising(beaconRegion.peripheralData(withMeasuredPower: nil) as? [String: Any])
+            }
+
+            completion(.success(()))
+        }
     }
 
     public func stopAdvertising() {
-        peripheralManager.stopAdvertising()
+        // Not ensurePeripheralManager(): stopping something that was never started shouldn't
+        // newly construct (and trigger a permission prompt for) a manager that doesn't exist yet.
+        peripheralManager?.stopAdvertising()
     }
 
     public func requestWhenInUseAuthorization() {
@@ -129,8 +165,10 @@ public class CapacitorIbeacon: NSObject, CLLocationManagerDelegate, CBPeripheral
         }
     }
 
-    public func isBluetoothEnabled() -> Bool {
-        return peripheralManager.state == .poweredOn
+    public func isBluetoothEnabled(completion: @escaping (Bool) -> Void) {
+        withReadyPeripheralManager { manager in
+            completion(manager.state == .poweredOn)
+        }
     }
 
     public func isRangingAvailable() -> Bool {
@@ -229,6 +267,11 @@ public class CapacitorIbeacon: NSObject, CLLocationManagerDelegate, CBPeripheral
     // MARK: - CBPeripheralManagerDelegate
 
     public func peripheralManagerDidUpdateState(_ peripheral: CBPeripheralManager) {
-        // Handle Bluetooth state changes if needed
+        guard !peripheralManagerReadyCallbacks.isEmpty else {
+            return
+        }
+        let callbacks = peripheralManagerReadyCallbacks
+        peripheralManagerReadyCallbacks.removeAll()
+        callbacks.forEach { $0(peripheral) }
     }
 }

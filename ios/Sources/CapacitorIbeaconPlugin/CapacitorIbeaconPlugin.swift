@@ -144,8 +144,9 @@ public class CapacitorIbeaconPlugin: CAPPlugin, CAPBridgedPlugin {
     }
 
     @objc func isBluetoothEnabled(_ call: CAPPluginCall) {
-        let enabled = implementation.isBluetoothEnabled()
-        call.resolve(["enabled": enabled])
+        implementation.isBluetoothEnabled { enabled in
+            call.resolve(["enabled": enabled])
+        }
     }
 
     @objc func isRangingAvailable(_ call: CAPPluginCall) {
