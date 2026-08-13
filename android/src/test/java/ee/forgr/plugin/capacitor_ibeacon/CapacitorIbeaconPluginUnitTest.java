@@ -27,16 +27,8 @@ public class CapacitorIbeaconPluginUnitTest {
             15000L,
             CapacitorIbeaconPlugin.longOptionFromCall(call, "betweenScanPeriod", 7000L)
         );
-        assertEquals(
-            "PluginCall.getLong misses Integer bridge values",
-            Long.valueOf(5000L),
-            call.getLong("scanPeriod", 5000L)
-        );
-        assertEquals(
-            "PluginCall.getLong misses Integer bridge values",
-            Long.valueOf(7000L),
-            call.getLong("betweenScanPeriod", 7000L)
-        );
+        assertEquals("PluginCall.getLong misses Integer bridge values", Long.valueOf(5000L), call.getLong("scanPeriod", 5000L));
+        assertEquals("PluginCall.getLong misses Integer bridge values", Long.valueOf(7000L), call.getLong("betweenScanPeriod", 7000L));
     }
 
     @Test
