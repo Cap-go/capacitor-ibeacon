@@ -3,9 +3,12 @@
     "allowUnreachableCode": false,
     "declaration": true,
     "esModuleInterop": true,
-    "lib": ["dom", "es2017"],
+    "lib": [
+      "dom",
+      "es2017"
+    ],
     "module": "esnext",
-    "moduleResolution": "node",
+    "moduleResolution": "bundler",
     "noFallthroughCasesInSwitch": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
@@ -13,7 +16,10 @@
     "pretty": true,
     "sourceMap": true,
     "strict": true,
-    "target": "es2017"
+    "target": "es2017",
+    "rootDir": "src"
   },
-  "files": ["src/index.ts"]
+  "files": [
+    "src/index.ts"
+  ]
 }
