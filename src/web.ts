@@ -8,27 +8,22 @@ import type {
 } from './definitions';
 
 export class CapacitorIbeaconWeb extends WebPlugin implements CapacitorIbeaconPlugin {
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   startMonitoringForRegion(_options: BeaconRegion): Promise<void> {
     throw new Error('Method not implemented on web platform.');
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   stopMonitoringForRegion(_options: BeaconRegion): Promise<void> {
     throw new Error('Method not implemented on web platform.');
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   startRangingBeaconsInRegion(_options: BeaconRegion): Promise<void> {
     throw new Error('Method not implemented on web platform.');
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   stopRangingBeaconsInRegion(_options: BeaconRegion): Promise<void> {
     throw new Error('Method not implemented on web platform.');
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   startAdvertising(_options: BeaconAdvertisingOptions): Promise<void> {
     throw new Error('Method not implemented on web platform.');
   }
@@ -57,7 +52,6 @@ export class CapacitorIbeaconWeb extends WebPlugin implements CapacitorIbeaconPl
     return Promise.resolve({ available: false });
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   enableARMAFilter(_options: { enabled: boolean }): Promise<void> {
     throw new Error('Method not implemented on web platform.');
   }
@@ -66,12 +60,10 @@ export class CapacitorIbeaconWeb extends WebPlugin implements CapacitorIbeaconPl
     return { version: 'web' };
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   enableBackgroundMode(_options: { enabled: boolean }): Promise<void> {
     throw new Error('Method not implemented on web platform.');
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   setBackgroundScanPeriod(_options: BackgroundScanPeriodOptions): Promise<void> {
     throw new Error('Method not implemented on web platform.');
   }
