@@ -1,12 +1,28 @@
 # capacitor-ibeacon
-<a href="https://capgo.app/"><img src="https://capgo.app/readme-banner.svg?repo=Cap-go/capacitor-ibeacon" alt="Capgo - Instant updates for Capacitor" /></a>
+
+Detect nearby iBeacons from your Capacitor app: monitor regions in the background, range beacons for distance and, on iOS, advertise the device as a beacon. Built for retail, venues and indoor proximity.
+
+<a href="https://capgo.app/?ref=plugin_ibeacon"><img src="https://capgo.app/readme-banner.svg?repo=Cap-go/capacitor-ibeacon" alt="Capgo - Instant updates for Capacitor" /></a>
 
 <div align="center">
-  <h2><a href="https://capgo.app/?ref=plugin_ibeacon"> ➡️ Get Instant updates for your App with Capgo</a></h2>
-  <h2><a href="https://capgo.app/consulting/?ref=plugin_ibeacon"> Missing a feature? We'll build the plugin for you 💪</a></h2>
+  <p><b>Capgo</b>: open-source live updates for Ionic and Capacitor apps. Ship OTA fixes and features instantly, without waiting for app store review.</p>
+  <h2><a href="https://capgo.app/register/?ref=plugin_ibeacon">➡️ Get started for free</a></h2>
+  <p>14-day unlimited free trial. No credit card required</p>
+  <p><a href="https://capgo.app/consulting/?ref=plugin_ibeacon">Missing a feature? We'll build the plugin for you 💪</a></p>
 </div>
 
-iBeacon plugin for Capacitor - proximity detection and beacon region monitoring.
+<p align="center">
+  <img src="https://raw.githubusercontent.com/Cap-go/capacitor-ibeacon/main/assets/github-social-preview.png" alt="@capgo/capacitor-ibeacon for Capacitor apps" width="300" />
+</p>
+
+## Key features
+
+- **Region monitoring**: `startMonitoringForRegion()` with `didEnterRegion`, `didExitRegion` and `didDetermineStateForRegion` events.
+- **Ranging**: `startRangingBeaconsInRegion()` emits `didRangeBeacons` with nearby beacons.
+- **Advertising on iOS**: `startAdvertising()` and `stopAdvertising()` turn the device into an iBeacon.
+- **Background scanning on Android**: `enableBackgroundMode()`, `setBackgroundScanPeriod()` and `enableARMAFilter()` for steadier distances.
+- **Permissions and status**: location authorization requests, `isBluetoothEnabled()` and `isRangingAvailable()`.
+- **Platforms**: iOS and Android. iOS uses Core Location, Android uses the AltBeacon library. Not available on web.
 
 ## Documentation
 
