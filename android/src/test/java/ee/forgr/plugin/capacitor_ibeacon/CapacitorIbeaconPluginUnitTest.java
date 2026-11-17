@@ -1,13 +1,23 @@
 package ee.forgr.plugin.capacitor_ibeacon;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import com.getcapacitor.JSObject;
 import com.getcapacitor.PluginCall;
+import org.altbeacon.beacon.Settings;
 import org.json.JSONException;
 import org.junit.Test;
 
 public class CapacitorIbeaconPluginUnitTest {
+
+    @Test
+    public void buildLoadBeaconSettingsUsesBackgroundServiceWithLongScanForcing() {
+        Settings settings = CapacitorIbeaconPlugin.buildLoadBeaconSettings();
+
+        assertTrue(settings.getScanStrategy() instanceof Settings.BackgroundServiceScanStrategy);
+        assertEquals(Boolean.TRUE, settings.getLongScanForcingEnabled());
+    }
 
     @Test
     public void testLongOptionFromCallCoercesIntegerBridgeValue() throws JSONException {

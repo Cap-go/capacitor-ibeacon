@@ -63,12 +63,9 @@ public class CapacitorIbeaconPlugin extends Plugin implements BeaconConsumer {
         // Set up iBeacon layout parser
         beaconManager.getBeaconParsers().add(new BeaconParser().setBeaconLayout("m:2-3=0215,i:4-19,i:20-21,i:22-23,p:24-24"));
 
-        // Configure for background scanning - enable long-running scanning mode
-        // This is critical for beacon detection when app is in background
-        beaconManager.setEnableScheduledScanJobs(false);
-
-        // Prevent Android from downgrading long-running BLE scans to opportunistic mode
-        beaconManager.adjustSettings(new Settings.Builder().setLongScanForcingEnabled(true).build());
+        // Keep background service scanning and long-running scan mode. adjustSettings() applies the
+        // builder scan strategy, which defaults to JobServiceScanStrategy and would re-enable jobs.
+        beaconManager.adjustSettings(buildLoadBeaconSettings());
 
         // Configure background scan periods (in milliseconds)
         // Default background scan: 10 seconds scan, 5 minutes between scans
@@ -610,6 +607,10 @@ public class CapacitorIbeaconPlugin extends Plugin implements BeaconConsumer {
     }
 
     // Helper methods
+
+    static Settings buildLoadBeaconSettings() {
+        return new Settings.Builder().setScanStrategy(new Settings.BackgroundServiceScanStrategy()).setLongScanForcingEnabled(true).build();
+    }
 
     // Capacitor's PluginCall.getLong() only reads Java Long values. JS numbers that
     // fit in 32 bits cross the bridge as Integer, so optLong is required.
