@@ -824,6 +824,8 @@ public class CapacitorIbeaconPlugin extends Plugin implements BeaconConsumer {
 
         try {
             beaconManager.disableForegroundServiceScanning();
+            // disableForegroundServiceScanning() re-enables scheduled scan jobs on Android 8+ (#76).
+            beaconManager.setEnableScheduledScanJobs(false);
         } catch (Exception e) {
             android.util.Log.w("CapacitorIbeacon", "Failed to disable foreground service scanning", e);
         } finally {
